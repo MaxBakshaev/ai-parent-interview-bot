@@ -1,0 +1,21 @@
+# Реальные данные интервью — НИКОГДА не коммитить (содержат имена, школы, статус семей)
+interview_statistics.xlsx
+*results_real*
+*real_data*
+data/*.real.*
+
+# n8n / секреты / окружение
+.env
+.env.*
+credentials.json
+n8n_data/
+.n8n/
+
+# ОС/редакторы
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Архивы на всякий случай
+*.zip

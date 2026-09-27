@@ -1,0 +1,83 @@
+{
+  "name": "Background_Reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ac567a0d-5c70-4927-b07d-de9884803a1e",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Number($json.minutes_to_wait) || 1 }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1acbf489-e7a7-42b1-a950-a3bb5c8afa62",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "Планировали с Вами в это время возобновить диалог. Хотели бы уточнить, не освободились ли Вы?",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "fea2da3c-a28e-4c0b-9fbf-e9ba42d7429e",
+      "name": "Возобновление диалога"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Возобновление диалога",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fc7bc50e-7367-41b6-b0e4-cac046cb8ec0",
+  "meta": {},
+  "id": "F0f3AmJFL3zaROmc",
+  "tags": []
+}

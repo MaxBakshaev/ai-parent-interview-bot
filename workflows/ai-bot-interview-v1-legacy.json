@@ -1,0 +1,1066 @@
+{
+  "name": "ИИ-бот для опроса родителей v.1",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        -576
+      ],
+      "id": "f0c68796-52c1-4dbb-bf59-2254f8b4e2ea",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "=Ты — Имя Фамилия, ведущий аналитик и исследователь, который занимается частными технологическими разработками для школ. Твоя задача — провести глубинное интервью с родителями школьников, чтобы собрать честную обратную связь об их текущей школе и протестировать идеи новых ИИ-решений. Твое позиционирование — представитель серьезного предприятия, но при этом ты ведешь диалог максимально мягко, эмпатично и с искренним человеческим участием к болям родителей.\n\nИНСТРУКЦИИ ПО ВЫЗОВУ ИНСТРУМЕНТОВ (СТРОГО СОБЛЮДАТЬ):\n1. Инструмент `schedule_reminder`: Вызывай ОБЯЗАТЕЛЬНО, если пользователь говорит, что занят, просит подождать или перенести общение. Запроси у пользователя количество минут для паузы и передай в параметр `minutes_to_wait`.\n2. Инструмент `save_interview_results`: Вызывай ОБЯЗАТЕЛЬНО после КАЖДОГО содержательного ответа пользователя. Передавай в параметры ТОЛЬКО те поля, по которым ты только что узнал новую или уточнённую информацию из последнего сообщения пользователя. Поля, которые ещё неизвестны или не менялись с прошлого вызова, НЕ включай в вызов инструмента вообще (не передавай для них пустую строку, false или 0 — просто пропусти параметр). Ранее сохранённые значения хранятся на сервере и подтягиваются автоматически, повторно их присылать не нужно и не нужно \"обнулять\". Все значения полей ВСЕГДА пиши на русском языке (никогда не пиши \"yes\"/\"no\" или другой текст на английском). Поле `ready_for_followup` заполняй ТОЛЬКО если пользователю был явно задан вопрос про готовность к повторному контакту (см. Шаг 11) и получен прямой ответ на него — никогда не выводи это поле из посторонних заявлений (например, просьба не публиковать данные интервью — это про приватность, а не про повторный контакт, и не должна попадать в это поле).\n\nПРАВИЛА ВЕДЕНИЯ ДИАЛОГА (СТРОГО СОБЛЮДАТЬ):\n* ЗАДАВАЙ ТОЛЬКО ОДИН ВОПРОС ИЛИ ОДИН НЕБОЛЬШОЙ БЛОК ВОПРОСОВ ЗА РАЗ. Никогда не вываливай на пользователя весь список. Если шаг сценария содержит несколько под-вопросов (отмечены отдельными пунктами) — задавай их строго по одному, дожидаясь ответа на каждый, прежде чем переходить к следующему пункту того же шага.\n* ДОЖДИСЬ ОТВЕТА перед тем, как идти дальше.\n* ПРОЯВЛЯЙ ЭМПАТИЮ. Если родитель рассказывает о проблеме (буллинг, плохая еда, игнорирование), сначала от лица человека прояви сочувствие (\"Мне очень жаль, что ваш ребенок столкнулся с этим...\", \"Понимаю, это действительно неприятная ситуация\"), а затем аккуратно задай уточняющий вопрос. Не будь сухим роботом.\n* КОПАЙ ГЛУБЖЕ, НО НЕ ДАВИ. Если ответ слишком короткий (\"да\", \"нет\", \"нормально\") или закрывает только часть заданного вопроса (например, вопрос был про несколько вещей сразу, а ответили только на одну) — задай ОДИН мягкий уточняющий вопрос, чтобы раскрыть тему полнее. Но если по тону ответа или прямым словам видно, что человек не хочет углубляться в конкретную тему — прими это, не переспрашивай повторно и переходи дальше. Не превращайся в дознавателя.\n* ЕСЛИ СПРОСЯТ ПРО НАЗВАНИЕ КОМПАНИИ. Если пользователь спросит, как называется компания, отвечай, что рабочее название пока не придумано (не называй никаких конкретных названий).\n* НЕ ДАВАЙ ОЦЕНОК КОНКРЕТНОЙ ШКОЛЕ, О КОТОРЫХ ТЫ НЕ МОЖЕШЬ ЗНАТЬ. Никогда не утверждай, что названная родителем школа (например, \"Ромашка\") хорошая, плохая, лучшая или худшая — у тебя нет и не может быть такой информации. Вместо оценки самой школы поддерживай решение или чувства родителя нейтральными фразами (\"звучит как продуманный выбор\", \"понимаю, почему это было важно\", \"хорошо, что вы это заметили\" и т.п.), не подтверждая и не оценивая качество школы как таковой.\n* ЕСЛИ РОДИТЕЛЬ НАЧИНАЕТ ПРЕДЛАГАТЬ СВОИ ИДЕИ ИЛИ РЕШЕНИЯ НЕ ПО ХОДУ ЗАДАННОГО ВОПРОСА (развёрнутые предложения по продукту, софту, процессам школы и т.п.) — поблагодари и мягко предложи обсудить это отдельно, не позволяя этому уводить интервью в сторону и разрастаться. Например: \"Это очень ценная идея, спасибо! Чтобы не потерять её, давайте мы отдельно свяжемся с вами и обсудим подробнее. А сейчас, если не возражаете, вернёмся к следующему вопросу...\". Кратко зафиксируй суть идеи в additional_comments, но не позволяй этой теме занять весь оставшийся разговор.\n\nСТРУКТУРА ИНТЕРВЬЮ (Двигайся строго по шагам):\n\nШаг 0. Онбординг (приветствие уже отправлено технически).\nВАЖНО: приветственное сообщение (\"Добрый день! Меня зовут Имя Фамилия...Не будете против, если мы сразу перейдем к вопросам?\") уже было отправлено пользователю АВТОМАТИЧЕСКИ, до того как ты включился в диалог — повторно его отправлять не нужно и нельзя. Первое сообщение, которое ты видишь от пользователя — это его ответ на это приветствие (согласие, приветствие в ответ и т.п.), независимо от его точного содержания.\nТвоя первая реплика в диалоге должна сразу быть: \"Как можем к Вам обращаться? В какой школе проходит обучение Ваш ребенок и в каком классе он учится?\"\n\nШаг 1. Локация и история.\nУзнай:\n* Постоянно живут в этой стране или недавно переехали (релоканты)?\n\nШаг 0.1. Приоритеты при выборе школы.\nНапиши: \"Прежде чем перейти к деталям, хочу понять — что для вас было наиболее важным при выборе именно этой школы?\"\nЭто ТРИ отдельных вопроса — задавай их последовательно, по одному, дожидаясь ответа на каждый (не объединяй в одно сообщение):\n1) Если бы нужно было расставить по важности следующие пункты при выборе школы — что было бы на первом месте, а что на последнем: качество образования, педагогический состав (опыт и отношение учителей), питание (частота и рацион), количество кружков и интерактивных занятий, частота праздников и мероприятий?\n2) Что из этого стало решающим фактором именно для их семьи — попроси вспомнить конкретный момент или разговор, после которого они поняли \"да, это наша школа\".\n3) Изменилось ли это мнение сейчас, спустя время обучения ребёнка — то, что казалось важным на входе, оказалось важным на деле, или приоритеты сместились? (Если родитель не ответил на эту часть в предыдущем ответе — обязательно задай её отдельно, не пропускай.)\n\nВернись к оставшимся вопросам Шага 1:\n* Как давно ребенок учится в этой школе?\n* Это единственный ребенок в школе, или есть еще дети?\n(Если релоканты — позже обрати особое внимание на вопросы из Блока 7).\n\nШаг 2. Питание.\nЭто несколько отдельных аспектов — пройдись по каждому (можно объединять не более 2 логически близких за раз), не пропуская ни одного:\n* Общая оценка питания, размер порций и разнообразие.\n* Учитывает ли школа особенности питания ребёнка — аллергии, халяль, вегетарианство или другие ограничения? (задавай этот вопрос явно, даже если родитель уже сказал, что тема еды его не сильно волнует)\n* Жалуется ли ребенок на еду?\n* Соответствует ли качество и разнообразие питания той цене, которую платят родители?\n\nШаг 3. Образование и внимание.\nЭто несколько отдельных аспектов — пройдись по каждому:\n* Уровень преподавания в целом.\n* Равномерность внимания учителей ко всем ученикам.\n* Кружки и допзанятия — интересны ли ребёнку, устраивает ли количество и разнообразие.\n* Бывало ли, что заявленный кружок или мероприятие в итоге не проводили, отменяли в последний момент, или он существовал скорее \"на бумаге\"? (задай этот вопрос явно, отдельно от общего вопроса про кружки)\n* Текучка кадров среди учителей и как часто получаете обратную связь от школы о прогрессе ребёнка.\n\nШаг 4. Форс-мажоры.\nУзнай про отмены занятий (свет, вода, отопление), как часто это бывает, как школа уведомляет и компенсирует ли это финансово/переносами.\n\nШаг 5. Стоимость.\nСправедлива ли цена? Были ли скрытые платежи?\n\nШаг 6. Коммуникация и администрация.\nКак быстро школа реагирует на жалобы? Учитывается ли мнение родителей? Были ли невыполненные обещания?\n\nШаг 7. Скрытые боли.\n* Выбрали бы они эту школу снова?\n* Что рассказывают о ней другим?\n* Что неприятно удивило после поступления?\n* Жалуется ли ребенок дома на нежелание идти в школу?\n* Если бы можно было одним движением поменять в этой школе только одну вещь — что бы это было? (это отдельный, общий вопрос, не путай с ценой — спрашивай его всегда)\n* Оценка от 1 до 10 (вероятность рекомендации). ВАЖНО: если родитель уклоняется от числа и отвечает описательно (\"не буду рекомендовать\", \"пусть сами составят мнение\") — прими такой ответ как содержательный, но мягко уточни: \"Если всё же нужно выбрать цифру от 1 до 10 — какая была бы ближе всего?\", чтобы по возможности получить число для nps_score. Также обязательно спроси, что повлияло на эту оценку (nps_reason).\n\nШаг 8. Уточняющий (зависит от Шага 1).\nЕсли релоканты: Насколько школа учитывает культурные особенности, сложно ли было адаптироваться?\nЕсли местные: Сравнивают ли с другими частными школами, где учатся знакомые?\n\nШаг 9. Безопасность и буллинг.\nЭто несколько отдельных аспектов — пройдись по каждому:\n* Расспроси про конфликты, травлю, драки в целом в школе/классе. Как реагирует школа?\n* Отдельно и прямо спроси: сталкивался ли ЛИЧНО ИХ РЕБЁНОК с травлей или обидным отношением со стороны других детей (а не только с конфликтами в целом)?\n* Рассказывает ли ребёнок дома, как у него отношения со сверстниками — дружит ли с кем-то, есть ли конфликты?\n* Если ранее выяснилось, что ребёнок не хочет идти в школу (Шаг 7) — уточни, связано ли это с отношениями со сверстниками, или причина в чём-то другом.\n* Есть ли в школе взрослый, к которому ребенок может обратиться в случае проблем?\n\nШаг 10. Тестирование ИИ-решений (Презентация).\nНапиши: \"Теперь позвольте, мы немного посвятим Вас в свою разработку...\" (Презентуй идеи по одной, жди реакции на каждую).\nИдеи для обсуждения (презентуй по одной):\n10.1 ИИ-ассистент при поступлении (мгновенные ответы вместо администратора).\n10.2 ИИ-камеры (фиксация драк и падений в реальном времени).\n10.3 \"Дневник радости\" (короткие видео с успехами ребенка).\n10.4 Равномерный опрос учеников (подсказки учителю, кого спросить).\n10.5 Цифровой профиль и профориентация.\n10.6 Контроль пропущенных приемов пищи.\n10.7 Тематические культурные фестивали.\n10.8 Финал: Готовность к повышению стоимости ради этих функций (на сколько %?).\n\nШаг 11. Закрытие.\n* Узнай, есть ли что-то еще, о чем хотели бы рассказать.\n* Прямо спроси: \"Не против, если мы иногда будем на связи, чтобы уточнить, как обстоят дела дальше?\" — и запиши прямой ответ в ready_for_followup. Не пропускай этот вопрос и не выводи ответ на него из других реплик разговора.\n* Перед последним вызовом инструмента сохранения — сформулируй для себя краткое резюме (2-4 предложения) главных болей этого родителя своими словами и передай его в поле summary_of_pains.\n* Поблагодари за время и заверши диалог.\n\nВАЖНО! Твой технический chat_id текущего пользователя: {{ $('Telegram Trigger').item.json.message.chat.id }}. При вызове инструмента save_interview_results всегда передавай его в поле chat_id.\n\nВАЖНОЕ ПРАВИЛО КАЖДОГО ОТВЕТА:\nНа каждое сообщение пользователя ты ДОЛЖЕН выполнить ровно два действия (именно в таком порядке):\n1. СНАЧАЛА вызови нужный инструмент (save_interview_results или schedule_reminder). При вызове ЛЮБОГО инструмента всегда передавай технический chat_id: {{ $('Telegram Trigger').item.json.message.chat.id }}\n2. ТОЛЬКО ПОСЛЕ ЭТОГО сгенерируй текстовый ответ/следующий вопрос пользователю.\nЗАПРЕЩАЕТСЯ отвечать пользователю текстом, не вызвав перед этим инструмент сохранения!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2496,
+        -576
+      ],
+      "id": "0f584bf0-3720-4c58-8e68-37489e129468",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        2288,
+        -352
+      ],
+      "id": "3ccc33db-bc4b-4694-985e-e08a86bda832",
+      "name": "Anthropic Chat Model"
+    },
+    {
+      "parameters": {
+        "description": "Инструмент для установки паузы/напоминания. ОБЯЗАТЕЛЬНОЕ ПРАВИЛО: в поле minutes_to_wait ты должен передавать ТОЛЬКО математическое число (например: 2, 15, 30). Категорически запрещено добавлять текст, слова \"минуты\" или символы. Только цифра!",
+        "workflowId": {
+          "__rl": true,
+          "value": "bzGATu5ZFXFmSy7w",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/bzGATu5ZFXFmSy7w",
+          "cachedResultName": "schedule_reminder"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ String($('Telegram Trigger').item.json.message.chat.id) }}",
+            "minutes_to_wait": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('minutes_to_wait', ``, 'number') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "minutes_to_wait",
+              "displayName": "minutes_to_wait",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2592,
+        -352
+      ],
+      "id": "fad24afc-e418-4779-8ec8-9e753ce068ec",
+      "name": "schedule_reminder"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "collectionName": "chat_history",
+        "databaseName": "n8n_bot_memory",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        2432,
+        -352
+      ],
+      "id": "1c651fc7-8d29-48d5-9bb4-03ea0033885f",
+      "name": "MongoDB Chat Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $('Sanitize AI Output').first().json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2848,
+        -160
+      ],
+      "id": "b7cab4df-3f7e-4778-9bec-00cd96b3c523",
+      "name": "Send a text message"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2464,
+        -160
+      ],
+      "id": "e045512b-91ad-4fc9-92ae-fec04c0e0898",
+      "name": "Send a chat action"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.min(Math.max(Math.round($('Sanitize AI Output').first().json.output.length / 30), 2), 5) }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2656,
+        -160
+      ],
+      "id": "46afa626-6bb8-46d5-b6b7-79c1ed48e676",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2288,
+        -576
+      ],
+      "id": "c37b084b-1acd-45d9-b650-1afe2d7a4e0f",
+      "name": "Send a chat action1"
+    },
+    {
+      "parameters": {
+        "description": "ОБЯЗАТЕЛЬНО используй этот инструмент после КАЖДОГО содержательного ответа пользователя. Передавай ТОЛЬКО те поля, которые ты точно узнал или обновил из последнего ответа. Неизвестные или не изменившиеся поля просто пропускай (не включай их в ответ).",
+        "workflowId": {
+          "__rl": true,
+          "value": "HqQSZI3rZ56NdUuF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/HqQSZI3rZ56NdUuF",
+          "cachedResultName": "save_interview_results"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nps_score": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nps_score', ``, 'string', null) }}",
+            "chat_id": "={{ String($('Telegram Trigger').first().json.message.chat.id) }}",
+            "parent_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parent_name', ``, 'string', null) }}",
+            "child_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('child_name', ``, 'string', null) }}",
+            "child_grade": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('child_grade', ``, 'string', null) }}",
+            "school_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('school_name', ``, 'string', null) }}",
+            "residency_status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('residency_status', ``, 'string', null) }}",
+            "time_in_school": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('time_in_school', ``, 'string', null) }}",
+            "has_other_children_in_school": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('has_other_children_in_school', ``, 'string', null) }}",
+            "food_review": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('food_review', ``, 'string', null) }}",
+            "food_portions_and_variety": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('food_portions_and_variety', ``, 'string', null) }}",
+            "food_dietary_restrictions": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('food_dietary_restrictions', ``, 'string', null) }}",
+            "food_complaints": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('food_complaints', ``, 'string', null) }}",
+            "food_price_quality": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('food_price_quality', ``, 'string', null) }}",
+            "education_quality_overall": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('education_quality_overall', ``, 'string', null) }}",
+            "teacher_attention": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('teacher_attention', ``, 'string', null) }}",
+            "clubs_satisfaction": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('clubs_satisfaction', ``, 'string', null) }}",
+            "clubs_fake_or_missed": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('clubs_fake_or_missed', ``, 'string', null) }}",
+            "teacher_turnover_impact": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('teacher_turnover_impact', ``, 'string', null) }}",
+            "cancellations_frequency": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cancellations_frequency', ``, 'string', null) }}",
+            "school_feedback_regularity": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('school_feedback_regularity', ``, 'string', null) }}",
+            "cancellations_notification": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cancellations_notification', ``, 'string', null) }}",
+            "cancellations_compensation": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cancellations_compensation', ``, 'string', null) }}",
+            "opinion_on_refunds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('opinion_on_refunds', ``, 'string', null) }}",
+            "price_fairness": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('price_fairness', ``, 'string', null) }}",
+            "unexpected_fees": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('unexpected_fees', ``, 'string', null) }}",
+            "one_thing_to_change": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('one_thing_to_change', ``, 'string', null) }}",
+            "admin_reaction_speed": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('admin_reaction_speed', ``, 'string', null) }}",
+            "parent_opinion_valued": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parent_opinion_valued', ``, 'string', null) }}",
+            "unresolved_promises": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('unresolved_promises', ``, 'string', null) }}",
+            "would_choose_again": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('would_choose_again', ``, 'string', null) }}",
+            "word_of_mouth": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('word_of_mouth', ``, 'string', null) }}",
+            "unpleasant_surprises": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('unpleasant_surprises', ``, 'string', null) }}",
+            "child_reluctance_to_go": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('child_reluctance_to_go', ``, 'string', null) }}",
+            "nps_reason": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nps_reason', ``, 'string', null) }}",
+            "adaptation_comments": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('adaptation_comments', ``, 'string', null) }}",
+            "safety_evaluation": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('safety_evaluation', ``, 'string', null) }}",
+            "child_shares_peer_dynamics": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('child_shares_peer_dynamics', ``, 'string', null) }}",
+            "conflicts_reported": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conflicts_reported', ``, 'string', null) }}",
+            "bullying_victim": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('bullying_victim', ``, 'string', null) }}",
+            "heard_bullying_others": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('heard_bullying_others', ``, 'string', null) }}",
+            "school_reaction_to_bullying": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('school_reaction_to_bullying', ``, 'string', null) }}",
+            "reluctance_due_to_peers": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('reluctance_due_to_peers', ``, 'string', null) }}",
+            "trusted_adult_presence": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('trusted_adult_presence', ``, 'string', null) }}",
+            "ai_admission_utility": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ai_admission_utility', ``, 'string', null) }}",
+            "ai_security_cameras": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ai_security_cameras', ``, 'string', null) }}",
+            "ai_joy_diary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ai_joy_diary', ``, 'string', null) }}",
+            "ai_even_questioning": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ai_even_questioning', ``, 'string', null) }}",
+            "ai_digital_profile": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ai_digital_profile', ``, 'string', null) }}",
+            "ai_food_control": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ai_food_control', ``, 'string', null) }}",
+            "cultural_festivals_interest": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cultural_festivals_interest', ``, 'string', null) }}",
+            "ready_for_price_increase": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ready_for_price_increase', ``, 'string', null) }}",
+            "acceptable_price_increase": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('acceptable_price_increase', ``, 'string', null) }}",
+            "additional_comments": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('additional_comments', ``, 'string', null) }}",
+            "ready_for_followup": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ready_for_followup', ``, 'string', null) }}",
+            "summary_of_pains": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('summary_of_pains', ``, 'string', null) }}",
+            "priorities_ranking": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priorities_ranking', ``, 'string', null) }}",
+            "decisive_factor": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('decisive_factor', ``, 'string', null) }}",
+            "priorities_shifted_over_time": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('priorities_shifted_over_time', ``, 'string', null) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "parent_name",
+              "displayName": "parent_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "child_name",
+              "displayName": "child_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "child_grade",
+              "displayName": "child_grade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "school_name",
+              "displayName": "school_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "residency_status",
+              "displayName": "residency_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "time_in_school",
+              "displayName": "time_in_school",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "has_other_children_in_school",
+              "displayName": "has_other_children_in_school",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "food_review",
+              "displayName": "food_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "food_portions_and_variety",
+              "displayName": "food_portions_and_variety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "food_dietary_restrictions",
+              "displayName": "food_dietary_restrictions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "food_complaints",
+              "displayName": "food_complaints",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "food_price_quality",
+              "displayName": "food_price_quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "education_quality_overall",
+              "displayName": "education_quality_overall",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "teacher_attention",
+              "displayName": "teacher_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "clubs_satisfaction",
+              "displayName": "clubs_satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "clubs_fake_or_missed",
+              "displayName": "clubs_fake_or_missed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "teacher_turnover_impact",
+              "displayName": "teacher_turnover_impact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "school_feedback_regularity",
+              "displayName": "school_feedback_regularity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cancellations_frequency",
+              "displayName": "cancellations_frequency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cancellations_notification",
+              "displayName": "cancellations_notification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cancellations_compensation",
+              "displayName": "cancellations_compensation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "opinion_on_refunds",
+              "displayName": "opinion_on_refunds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "price_fairness",
+              "displayName": "price_fairness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "unexpected_fees",
+              "displayName": "unexpected_fees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "one_thing_to_change",
+              "displayName": "one_thing_to_change",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "admin_reaction_speed",
+              "displayName": "admin_reaction_speed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "parent_opinion_valued",
+              "displayName": "parent_opinion_valued",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "unresolved_promises",
+              "displayName": "unresolved_promises",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "would_choose_again",
+              "displayName": "would_choose_again",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "word_of_mouth",
+              "displayName": "word_of_mouth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "unpleasant_surprises",
+              "displayName": "unpleasant_surprises",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "child_reluctance_to_go",
+              "displayName": "child_reluctance_to_go",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nps_score",
+              "displayName": "nps_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nps_reason",
+              "displayName": "nps_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "adaptation_comments",
+              "displayName": "adaptation_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "safety_evaluation",
+              "displayName": "safety_evaluation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "child_shares_peer_dynamics",
+              "displayName": "child_shares_peer_dynamics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "conflicts_reported",
+              "displayName": "conflicts_reported",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "bullying_victim",
+              "displayName": "bullying_victim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "heard_bullying_others",
+              "displayName": "heard_bullying_others",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "school_reaction_to_bullying",
+              "displayName": "school_reaction_to_bullying",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "reluctance_due_to_peers",
+              "displayName": "reluctance_due_to_peers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "trusted_adult_presence",
+              "displayName": "trusted_adult_presence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ai_admission_utility",
+              "displayName": "ai_admission_utility",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ai_security_cameras",
+              "displayName": "ai_security_cameras",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ai_joy_diary",
+              "displayName": "ai_joy_diary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ai_even_questioning",
+              "displayName": "ai_even_questioning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ai_digital_profile",
+              "displayName": "ai_digital_profile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ai_food_control",
+              "displayName": "ai_food_control",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cultural_festivals_interest",
+              "displayName": "cultural_festivals_interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ready_for_price_increase",
+              "displayName": "ready_for_price_increase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "acceptable_price_increase",
+              "displayName": "acceptable_price_increase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "additional_comments",
+              "displayName": "additional_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "ready_for_followup",
+              "displayName": "ready_for_followup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "summary_of_pains",
+              "displayName": "summary_of_pains",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "priorities_ranking",
+              "displayName": "priorities_ranking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "decisive_factor",
+              "displayName": "decisive_factor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "priorities_shifted_over_time",
+              "displayName": "priorities_shifted_over_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2768,
+        -352
+      ],
+      "id": "61c79682-a23f-4c95-b6bd-0b63235a6512",
+      "name": "save_interview_results"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output || '';\n\n// Detect leaked raw tool-call / XML-invoke syntax that should never reach the user\nconst leakPattern = /<invoke[\\s\\S]*|<\\/?parameter[\\s\\S]*|Calling\\s+\\w+/i;\nconst match = raw.match(leakPattern);\n\nlet clean = raw;\nif (match) {\n  clean = raw.slice(0, match.index).trim();\n}\n\nif (!clean) {\n  clean = 'Ой, кажется у меня на секунду пропала связь. Не могли бы вы, пожалуйста, повторить ваш последний ответ?';\n}\n\nreturn [{ json: { output: clean } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        -160
+      ],
+      "id": "23e87eca-235e-40f9-bd88-8ac726ea17bc",
+      "name": "Sanitize AI Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "9d61aa8d-edb8-40ff-9cf7-14db7dc7f695",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        -576
+      ],
+      "id": "07008a53-caa2-4946-8ac1-ab10f00322f7",
+      "name": "Is Start Command"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Добрый день! Меня зовут Имя Фамилия, я с командой хочу собрать мнение родителей по поводу частного образования. Благодарю, что решили уделить нам время и ответить на несколько вопросов. Как мы говорили ранее, сейчас мы разрабатываем крупное технологическое решение для частных школ. Вся переписка будет внимательно изучена нашей командой, и мы постараемся сделать так, чтобы ни одна Ваша жалоба не осталась неучтенной. Не будете против, если мы сразу перейдем к вопросам?",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2288,
+        -768
+      ],
+      "id": "99eef213-c8c3-4f73-b0c8-82a35385c65c",
+      "name": "Send Start Greeting"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Start Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "schedule_reminder": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Sanitize AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_interview_results": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitize AI Output": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Start Command": {
+      "main": [
+        [
+          {
+            "node": "Send Start Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a chat action1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "01cb1315-5a14-4f8b-9579-a24ed77e6438",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "kNAgQSQFvbc282ic",
+  "tags": []
+}

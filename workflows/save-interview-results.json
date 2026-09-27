@@ -1,0 +1,1072 @@
+{
+  "name": "save_interview_results",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"chat_id\": \"\",\n  \"parent_name\": \"\",\n  \"child_name\": \"\",\n  \"child_grade\": \"\",\n  \"school_name\": \"\",\n  \"residency_status\": \"\",\n  \"time_in_school\": \"\",\n  \"has_other_children_in_school\": \"\",\n  \"food_review\": \"\",\n  \"food_portions_and_variety\": \"\",\n  \"food_dietary_restrictions\": \"\",\n  \"food_complaints\": \"\",\n  \"food_price_quality\": \"\",\n  \"education_quality_overall\": \"\",\n  \"teacher_attention\": \"\",\n  \"clubs_satisfaction\": \"\",\n  \"clubs_fake_or_missed\": \"\",\n  \"teacher_turnover_impact\": \"\",\n  \"school_feedback_regularity\": \"\",\n  \"cancellations_frequency\": \"\",\n  \"cancellations_notification\": \"\",\n  \"cancellations_compensation\": \"\",\n  \"opinion_on_refunds\": \"\",\n  \"price_fairness\": \"\",\n  \"unexpected_fees\": \"\",\n  \"one_thing_to_change\": \"\",\n  \"admin_reaction_speed\": \"\",\n  \"parent_opinion_valued\": \"\",\n  \"unresolved_promises\": \"\",\n  \"would_choose_again\": \"\",\n  \"word_of_mouth\": \"\",\n  \"unpleasant_surprises\": \"\",\n  \"child_reluctance_to_go\": \"\",\n  \"nps_score\": \"\",\n  \"nps_reason\": \"\",\n  \"adaptation_comments\": \"\",\n  \"safety_evaluation\": \"\",\n  \"child_shares_peer_dynamics\": \"\",\n  \"conflicts_reported\": \"\",\n  \"bullying_victim\": \"\",\n  \"heard_bullying_others\": \"\",\n  \"school_reaction_to_bullying\": \"\",\n  \"reluctance_due_to_peers\": \"\",\n  \"trusted_adult_presence\": \"\",\n  \"ai_admission_utility\": \"\",\n  \"ai_security_cameras\": \"\",\n  \"ai_joy_diary\": \"\",\n  \"ai_even_questioning\": \"\",\n  \"ai_digital_profile\": \"\",\n  \"ai_food_control\": \"\",\n  \"cultural_festivals_interest\": \"\",\n  \"ready_for_price_increase\": \"\",\n  \"acceptable_price_increase\": \"\",\n  \"additional_comments\": \"\",\n  \"ready_for_followup\": \"\",\n  \"summary_of_pains\": \"\",\n  \"priorities_ranking\": \"\",\n  \"decisive_factor\": \"\",\n  \"priorities_shifted_over_time\": \"\"\n}"
+      },
+      "id": "df0a6e8b-66e9-496b-9395-8db67bc2ec6a",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -256,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "interview_results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID_HERE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID_HERE/edit"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "chat_id",
+              "lookupValue": "={{ $json.chat_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        -144
+      ],
+      "id": "765c5472-4b41-47be-904d-f1104ca40794",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8364e6bf-4fd5-47dc-87df-63c62c11602e",
+              "name": "chat_id",
+              "value": "={{ $('When Executed by Another Workflow').first().json.chat_id ?? $('Get row(s) in sheet').first().json.chat_id }}",
+              "type": "string"
+            },
+            {
+              "id": "59072a09-2ea7-4d07-aa4b-eba85f0cbdf3",
+              "name": "parent_name",
+              "value": "={{ $('When Executed by Another Workflow').first().json.parent_name ?? $('Get row(s) in sheet').first().json.parent_name }}",
+              "type": "string"
+            },
+            {
+              "id": "88a11752-a2e1-43b6-b888-61ef300b37f1",
+              "name": "child_name",
+              "value": "={{ $('When Executed by Another Workflow').first().json.child_name ?? $('Get row(s) in sheet').first().json.child_name }}",
+              "type": "string"
+            },
+            {
+              "id": "de358184-58df-472f-a9c5-b47481172896",
+              "name": "child_grade",
+              "value": "={{ $('When Executed by Another Workflow').first().json.child_grade ?? $('Get row(s) in sheet').first().json.child_grade }}",
+              "type": "string"
+            },
+            {
+              "id": "24f74ee1-a539-49c5-84e6-43b0dbc5d3e8",
+              "name": "school_name",
+              "value": "={{ $('When Executed by Another Workflow').first().json.school_name ?? $('Get row(s) in sheet').first().json.school_name }}",
+              "type": "string"
+            },
+            {
+              "id": "ae9a48e8-52d3-4cf7-aae8-de5058ea7e83",
+              "name": "residency_status",
+              "value": "={{ $('When Executed by Another Workflow').first().json.residency_status ?? $('Get row(s) in sheet').first().json.residency_status }}",
+              "type": "string"
+            },
+            {
+              "id": "3043e7b0-248e-45da-a36e-3ae3c9d7d435",
+              "name": "time_in_school",
+              "value": "={{ $('When Executed by Another Workflow').first().json.time_in_school ?? $('Get row(s) in sheet').first().json.time_in_school }}",
+              "type": "string"
+            },
+            {
+              "id": "21f941f6-3a04-4c0f-bdc2-51732273732f",
+              "name": "has_other_children_in_school",
+              "value": "={{ $('When Executed by Another Workflow').first().json.has_other_children_in_school ?? $('Get row(s) in sheet').first().json.has_other_children_in_school }}",
+              "type": "string"
+            },
+            {
+              "id": "1fe0fe8a-19e2-4e6a-b9b1-f97d387d1dbd",
+              "name": "food_review",
+              "value": "={{ $('When Executed by Another Workflow').first().json.food_review ?? $('Get row(s) in sheet').first().json.food_review }}",
+              "type": "string"
+            },
+            {
+              "id": "9df8d2ab-aa2b-4381-a41b-1b3faad8297b",
+              "name": "food_portions_and_variety",
+              "value": "={{ $('When Executed by Another Workflow').first().json.food_portions_and_variety ?? $('Get row(s) in sheet').first().json.food_portions_and_variety }}",
+              "type": "string"
+            },
+            {
+              "id": "fae1460c-0af1-4481-9353-f22235fd53c8",
+              "name": "food_dietary_restrictions",
+              "value": "={{ $('When Executed by Another Workflow').first().json.food_dietary_restrictions ?? $('Get row(s) in sheet').first().json.food_dietary_restrictions }}",
+              "type": "string"
+            },
+            {
+              "id": "d82ece34-552b-4e63-b2b7-c71e42ecb230",
+              "name": "food_complaints",
+              "value": "={{ $('When Executed by Another Workflow').first().json.food_complaints ?? $('Get row(s) in sheet').first().json.food_complaints }}",
+              "type": "string"
+            },
+            {
+              "id": "49e8e4d9-b14c-4b19-8457-c19b7b3e13b8",
+              "name": "food_price_quality",
+              "value": "={{ $('When Executed by Another Workflow').first().json.food_price_quality ?? $('Get row(s) in sheet').first().json.food_price_quality }}",
+              "type": "string"
+            },
+            {
+              "id": "75e6f62f-8865-48fc-8f94-06e4585ba119",
+              "name": "education_quality_overall",
+              "value": "={{ $('When Executed by Another Workflow').first().json.education_quality_overall ?? $('Get row(s) in sheet').first().json.education_quality_overall }}",
+              "type": "string"
+            },
+            {
+              "id": "74d9fdcb-3a32-4a10-b795-fc2bcaa2799e",
+              "name": "teacher_attention",
+              "value": "={{ $('When Executed by Another Workflow').first().json.teacher_attention ?? $('Get row(s) in sheet').first().json.teacher_attention }}",
+              "type": "string"
+            },
+            {
+              "id": "ebd77b6c-e887-4993-8f25-acb50865ea73",
+              "name": "clubs_satisfaction",
+              "value": "={{ $('When Executed by Another Workflow').first().json.clubs_satisfaction ?? $('Get row(s) in sheet').first().json.clubs_satisfaction }}",
+              "type": "string"
+            },
+            {
+              "id": "ab750bf4-cdb1-4207-a64d-c5e559f79864",
+              "name": "clubs_fake_or_missed",
+              "value": "={{ $('When Executed by Another Workflow').first().json.clubs_fake_or_missed ?? $('Get row(s) in sheet').first().json.clubs_fake_or_missed }}",
+              "type": "string"
+            },
+            {
+              "id": "73ccc8ae-a688-4a0b-8fc7-d30ff38c647e",
+              "name": "teacher_turnover_impact",
+              "value": "={{ $('When Executed by Another Workflow').first().json.teacher_turnover_impact ?? $('Get row(s) in sheet').first().json.teacher_turnover_impact }}",
+              "type": "string"
+            },
+            {
+              "id": "4f4c5a30-d31b-4555-a05c-2ab7faaa253c",
+              "name": "school_feedback_regularity",
+              "value": "={{ $('When Executed by Another Workflow').first().json.school_feedback_regularity ?? $('Get row(s) in sheet').first().json.school_feedback_regularity }}",
+              "type": "string"
+            },
+            {
+              "id": "50ef1c57-7645-4f77-99a2-d41cd508ed74",
+              "name": "cancellations_frequency",
+              "value": "={{ $('When Executed by Another Workflow').first().json.cancellations_frequency ?? $('Get row(s) in sheet').first().json.cancellations_frequency }}",
+              "type": "string"
+            },
+            {
+              "id": "51b33197-81cd-403d-97e5-d46e3d72d45f",
+              "name": "cancellations_notification",
+              "value": "={{ $('When Executed by Another Workflow').first().json.cancellations_notification ?? $('Get row(s) in sheet').first().json.cancellations_notification }}",
+              "type": "string"
+            },
+            {
+              "id": "1ac6d7fe-38a7-4cc7-abb9-af6ea0abc65c",
+              "name": "cancellations_compensation",
+              "value": "={{ $('When Executed by Another Workflow').first().json.cancellations_compensation ?? $('Get row(s) in sheet').first().json.cancellations_compensation }}",
+              "type": "string"
+            },
+            {
+              "id": "9a142f6b-5aaa-412c-8aae-c1a62cb42cec",
+              "name": "opinion_on_refunds",
+              "value": "={{ $('When Executed by Another Workflow').first().json.opinion_on_refunds ?? $('Get row(s) in sheet').first().json.opinion_on_refunds }}",
+              "type": "string"
+            },
+            {
+              "id": "af0bafbf-7f84-4da1-a54c-3df5ba8f5d1d",
+              "name": "price_fairness",
+              "value": "={{ $('When Executed by Another Workflow').first().json.price_fairness ?? $('Get row(s) in sheet').first().json.price_fairness }}",
+              "type": "string"
+            },
+            {
+              "id": "b512160e-73b6-4473-88e5-f352a7f4e475",
+              "name": "unexpected_fees",
+              "value": "={{ $('When Executed by Another Workflow').first().json.unexpected_fees ?? $('Get row(s) in sheet').first().json.unexpected_fees }}",
+              "type": "string"
+            },
+            {
+              "id": "ca472cd7-0f89-4533-a843-95e322f225ee",
+              "name": "one_thing_to_change",
+              "value": "={{ $('When Executed by Another Workflow').first().json.one_thing_to_change ?? $('Get row(s) in sheet').first().json.one_thing_to_change }}",
+              "type": "string"
+            },
+            {
+              "id": "296c3b71-386a-48b4-8796-be20131e9f03",
+              "name": "admin_reaction_speed",
+              "value": "={{ $('When Executed by Another Workflow').first().json.admin_reaction_speed ?? $('Get row(s) in sheet').first().json.admin_reaction_speed }}",
+              "type": "string"
+            },
+            {
+              "id": "3cae749b-a29c-4f6f-bf86-5936dd6dad30",
+              "name": "parent_opinion_valued",
+              "value": "={{ $('When Executed by Another Workflow').first().json.parent_opinion_valued ?? $('Get row(s) in sheet').first().json.parent_opinion_valued }}",
+              "type": "string"
+            },
+            {
+              "id": "33864ecf-f3bf-49d5-ba0d-eb5c433f56aa",
+              "name": "unresolved_promises",
+              "value": "={{ $('When Executed by Another Workflow').first().json.unresolved_promises ?? $('Get row(s) in sheet').first().json.unresolved_promises }}",
+              "type": "string"
+            },
+            {
+              "id": "4c54cf1b-65e9-407f-a93c-b60e5db12ba9",
+              "name": "would_choose_again",
+              "value": "={{ $('When Executed by Another Workflow').first().json.would_choose_again ?? $('Get row(s) in sheet').first().json.would_choose_again }}",
+              "type": "string"
+            },
+            {
+              "id": "457963b2-1e15-425b-b13c-020c0ff95139",
+              "name": "word_of_mouth",
+              "value": "={{ $('When Executed by Another Workflow').first().json.word_of_mouth ?? $('Get row(s) in sheet').first().json.word_of_mouth }}",
+              "type": "string"
+            },
+            {
+              "id": "d783eabb-55d6-4921-8029-098f6d37a118",
+              "name": "unpleasant_surprises",
+              "value": "={{ $('When Executed by Another Workflow').first().json.unpleasant_surprises ?? $('Get row(s) in sheet').first().json.unpleasant_surprises }}",
+              "type": "string"
+            },
+            {
+              "id": "66442309-0918-4a2a-896f-c8e3b6cb9cf1",
+              "name": "child_reluctance_to_go",
+              "value": "={{ $('When Executed by Another Workflow').first().json.child_reluctance_to_go ?? $('Get row(s) in sheet').first().json.child_reluctance_to_go }}",
+              "type": "string"
+            },
+            {
+              "id": "71ef732d-fd23-4a95-b5e1-f10ecb599fa9",
+              "name": "nps_score",
+              "value": "={{ $('When Executed by Another Workflow').first().json.nps_score ?? $('Get row(s) in sheet').first().json.nps_score }}",
+              "type": "string"
+            },
+            {
+              "id": "05c3c0a7-5c9d-4d75-b4f1-0b6e6328a311",
+              "name": "nps_reason",
+              "value": "={{ $('When Executed by Another Workflow').first().json.nps_reason ?? $('Get row(s) in sheet').first().json.nps_reason }}",
+              "type": "string"
+            },
+            {
+              "id": "f372f0f7-5dee-476a-9cd8-563179b7b3b9",
+              "name": "adaptation_comments",
+              "value": "={{ $('When Executed by Another Workflow').first().json.adaptation_comments ?? $('Get row(s) in sheet').first().json.adaptation_comments }}",
+              "type": "string"
+            },
+            {
+              "id": "65be2445-62f5-4679-8f4c-1c2fcd528fb0",
+              "name": "safety_evaluation",
+              "value": "={{ $('When Executed by Another Workflow').first().json.safety_evaluation ?? $('Get row(s) in sheet').first().json.safety_evaluation }}",
+              "type": "string"
+            },
+            {
+              "id": "03a3cce2-675e-4757-874c-1cdfc38a16a8",
+              "name": "child_shares_peer_dynamics",
+              "value": "={{ $('When Executed by Another Workflow').first().json.child_shares_peer_dynamics ?? $('Get row(s) in sheet').first().json.child_shares_peer_dynamics }}",
+              "type": "string"
+            },
+            {
+              "id": "da9f3b25-783b-4f04-ab5a-884aaa43806f",
+              "name": "conflicts_reported",
+              "value": "={{ $('When Executed by Another Workflow').first().json.conflicts_reported ?? $('Get row(s) in sheet').first().json.conflicts_reported }}",
+              "type": "string"
+            },
+            {
+              "id": "28de919c-5016-4f37-918a-527b4662fa9e",
+              "name": "bullying_victim",
+              "value": "={{ $('When Executed by Another Workflow').first().json.bullying_victim ?? $('Get row(s) in sheet').first().json.bullying_victim }}",
+              "type": "string"
+            },
+            {
+              "id": "5e7c44e9-a868-4808-8cf5-f1da2852e28d",
+              "name": "heard_bullying_others",
+              "value": "={{ $('When Executed by Another Workflow').first().json.heard_bullying_others ?? $('Get row(s) in sheet').first().json.heard_bullying_others }}",
+              "type": "string"
+            },
+            {
+              "id": "0654c5bd-566f-4d9f-adf8-7c8ea0d2dd23",
+              "name": "school_reaction_to_bullying",
+              "value": "={{ $('When Executed by Another Workflow').first().json.school_reaction_to_bullying ?? $('Get row(s) in sheet').first().json.school_reaction_to_bullying }}",
+              "type": "string"
+            },
+            {
+              "id": "0038f029-aec4-4687-a633-3f556b4aab5f",
+              "name": "reluctance_due_to_peers",
+              "value": "={{ $('When Executed by Another Workflow').first().json.reluctance_due_to_peers ?? $('Get row(s) in sheet').first().json.reluctance_due_to_peers }}",
+              "type": "string"
+            },
+            {
+              "id": "f67c748a-eff5-4e07-bef9-0e421674777b",
+              "name": "trusted_adult_presence",
+              "value": "={{ $('When Executed by Another Workflow').first().json.trusted_adult_presence ?? $('Get row(s) in sheet').first().json.trusted_adult_presence }}",
+              "type": "string"
+            },
+            {
+              "id": "6e23e3f8-ddee-4b38-b88e-f0c020071af0",
+              "name": "ai_admission_utility",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ai_admission_utility ?? $('Get row(s) in sheet').first().json.ai_admission_utility }}",
+              "type": "string"
+            },
+            {
+              "id": "96b512cf-b701-43bb-ae2f-a08df40634a8",
+              "name": "ai_security_cameras",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ai_security_cameras ?? $('Get row(s) in sheet').first().json.ai_security_cameras }}",
+              "type": "string"
+            },
+            {
+              "id": "151d1f11-e6fd-4564-b058-2b7c01503c85",
+              "name": "ai_joy_diary",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ai_joy_diary ?? $('Get row(s) in sheet').first().json.ai_joy_diary }}",
+              "type": "string"
+            },
+            {
+              "id": "ebec4a23-0ce5-4547-a23e-03e99a0a20e9",
+              "name": "ai_even_questioning",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ai_even_questioning ?? $('Get row(s) in sheet').first().json.ai_even_questioning }}",
+              "type": "string"
+            },
+            {
+              "id": "2ed33a9a-c033-4605-acfa-e8b69b9a8530",
+              "name": "ai_digital_profile",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ai_digital_profile ?? $('Get row(s) in sheet').first().json.ai_digital_profile }}",
+              "type": "string"
+            },
+            {
+              "id": "0104c46a-3aa3-40c2-bb40-81f74613b04c",
+              "name": "ai_food_control",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ai_food_control ?? $('Get row(s) in sheet').first().json.ai_food_control }}",
+              "type": "string"
+            },
+            {
+              "id": "af8a7171-bcc7-4867-bf39-c750c0e4ca8c",
+              "name": "cultural_festivals_interest",
+              "value": "={{ $('When Executed by Another Workflow').first().json.cultural_festivals_interest ?? $('Get row(s) in sheet').first().json.cultural_festivals_interest }}",
+              "type": "string"
+            },
+            {
+              "id": "fd53abca-88d6-440a-929b-fdc8b32d9348",
+              "name": "ready_for_price_increase",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ready_for_price_increase ?? $('Get row(s) in sheet').first().json.ready_for_price_increase }}",
+              "type": "string"
+            },
+            {
+              "id": "02d878ef-bfea-4b2b-a36e-c1ce8ea06934",
+              "name": "acceptable_price_increase",
+              "value": "={{ $('When Executed by Another Workflow').first().json.acceptable_price_increase ?? $('Get row(s) in sheet').first().json.acceptable_price_increase }}",
+              "type": "string"
+            },
+            {
+              "id": "605db3d0-aa62-4752-9290-31462ee77f76",
+              "name": "additional_comments",
+              "value": "={{ $('When Executed by Another Workflow').first().json.additional_comments ?? $('Get row(s) in sheet').first().json.additional_comments }}",
+              "type": "string"
+            },
+            {
+              "id": "c2abe9b3-3e06-49ae-8dc1-79ef883685ab",
+              "name": "ready_for_followup",
+              "value": "={{ $('When Executed by Another Workflow').first().json.ready_for_followup ?? $('Get row(s) in sheet').first().json.ready_for_followup }}",
+              "type": "string"
+            },
+            {
+              "id": "32eb1134-97aa-4080-a174-51d703e83934",
+              "name": "summary_of_pains",
+              "value": "={{ $('When Executed by Another Workflow').first().json.summary_of_pains ?? $('Get row(s) in sheet').first().json.summary_of_pains }}",
+              "type": "string"
+            },
+            {
+              "id": "priorities_ranking",
+              "name": "priorities_ranking",
+              "value": "={{ $('When Executed by Another Workflow').first().json.priorities_ranking ?? $('Get row(s) in sheet').first().json.priorities_ranking }}",
+              "type": "string"
+            },
+            {
+              "id": "decisive_factor",
+              "name": "decisive_factor",
+              "value": "={{ $('When Executed by Another Workflow').first().json.decisive_factor ?? $('Get row(s) in sheet').first().json.decisive_factor }}",
+              "type": "string"
+            },
+            {
+              "id": "priorities_shifted_over_time",
+              "name": "priorities_shifted_over_time",
+              "value": "={{ $('When Executed by Another Workflow').first().json.priorities_shifted_over_time ?? $('Get row(s) in sheet').first().json.priorities_shifted_over_time }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        -144
+      ],
+      "id": "99347b45-9782-4326-a3f9-f92185e87144",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "interview_results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID_HERE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID_HERE/edit"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "chat_id"
+          ],
+          "schema": [
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parent_name",
+              "displayName": "parent_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "child_name",
+              "displayName": "child_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "child_grade",
+              "displayName": "child_grade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "school_name",
+              "displayName": "school_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "residency_status",
+              "displayName": "residency_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time_in_school",
+              "displayName": "time_in_school",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "has_other_children_in_school",
+              "displayName": "has_other_children_in_school",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_review",
+              "displayName": "food_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_portions_and_variety",
+              "displayName": "food_portions_and_variety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_dietary_restrictions",
+              "displayName": "food_dietary_restrictions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_complaints",
+              "displayName": "food_complaints",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_price_quality",
+              "displayName": "food_price_quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "education_quality_overall",
+              "displayName": "education_quality_overall",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "teacher_attention",
+              "displayName": "teacher_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "clubs_satisfaction",
+              "displayName": "clubs_satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "clubs_fake_or_missed",
+              "displayName": "clubs_fake_or_missed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "teacher_turnover_impact",
+              "displayName": "teacher_turnover_impact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "school_feedback_regularity",
+              "displayName": "school_feedback_regularity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cancellations_frequency",
+              "displayName": "cancellations_frequency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cancellations_notification",
+              "displayName": "cancellations_notification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cancellations_compensation",
+              "displayName": "cancellations_compensation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "opinion_on_refunds",
+              "displayName": "opinion_on_refunds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price_fairness",
+              "displayName": "price_fairness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unexpected_fees",
+              "displayName": "unexpected_fees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "one_thing_to_change",
+              "displayName": "one_thing_to_change",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_reaction_speed",
+              "displayName": "admin_reaction_speed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parent_opinion_valued",
+              "displayName": "parent_opinion_valued",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unresolved_promises",
+              "displayName": "unresolved_promises",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "would_choose_again",
+              "displayName": "would_choose_again",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "word_of_mouth",
+              "displayName": "word_of_mouth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unpleasant_surprises",
+              "displayName": "unpleasant_surprises",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "child_reluctance_to_go",
+              "displayName": "child_reluctance_to_go",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nps_score",
+              "displayName": "nps_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nps_reason",
+              "displayName": "nps_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "adaptation_comments",
+              "displayName": "adaptation_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_evaluation",
+              "displayName": "safety_evaluation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "child_shares_peer_dynamics",
+              "displayName": "child_shares_peer_dynamics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "conflicts_reported",
+              "displayName": "conflicts_reported",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bullying_victim",
+              "displayName": "bullying_victim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "heard_bullying_others",
+              "displayName": "heard_bullying_others",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "school_reaction_to_bullying",
+              "displayName": "school_reaction_to_bullying",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reluctance_due_to_peers",
+              "displayName": "reluctance_due_to_peers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trusted_adult_presence",
+              "displayName": "trusted_adult_presence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_admission_utility",
+              "displayName": "ai_admission_utility",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_security_cameras",
+              "displayName": "ai_security_cameras",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_joy_diary",
+              "displayName": "ai_joy_diary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_even_questioning",
+              "displayName": "ai_even_questioning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_digital_profile",
+              "displayName": "ai_digital_profile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_food_control",
+              "displayName": "ai_food_control",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cultural_festivals_interest",
+              "displayName": "cultural_festivals_interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ready_for_price_increase",
+              "displayName": "ready_for_price_increase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "acceptable_price_increase",
+              "displayName": "acceptable_price_increase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "additional_comments",
+              "displayName": "additional_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ready_for_followup",
+              "displayName": "ready_for_followup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary_of_pains",
+              "displayName": "summary_of_pains",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priorities_ranking",
+              "displayName": "priorities_ranking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decisive_factor",
+              "displayName": "decisive_factor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priorities_shifted_over_time",
+              "displayName": "priorities_shifted_over_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -144
+      ],
+      "id": "f773a58a-8cec-4f4e-844d-d9ddfd83ae0d",
+      "name": "Append or update row in sheet",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n// Detect leaked tool-call JSON fragments that occasionally spill into a field's value\n// (e.g. a missing closing quote causes the next parameter's JSON, or the tool_use id, to leak in)\nconst leakPattern = /\",\\s*\"[a-zA-Z_]+\"\\s*:\\s*\"|\"id\":\"toolu_[a-zA-Z0-9]*\"|<\\/invoke>/;\n\nconst cleaned = {};\nfor (const [key, value] of Object.entries(item)) {\n  if (typeof value === 'string') {\n    const match = value.match(leakPattern);\n    let v = match ? value.slice(0, match.index) : value;\n    v = v.replace(/[\"\\s]+$/, '').trim();\n    cleaned[key] = v;\n  } else {\n    cleaned[key] = value;\n  }\n}\n\nreturn [{ json: cleaned }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -144
+      ],
+      "id": "df44faa3-ead0-43eb-b0d4-560bde3d7067",
+      "name": "Sanitize Field Values"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Sanitize Field Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitize Field Values": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a9420e87-2f0a-462f-b891-0ab9b3420695",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "HqQSZI3rZ56NdUuF",
+  "tags": []
+}

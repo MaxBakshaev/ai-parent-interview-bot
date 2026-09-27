@@ -1,0 +1,75 @@
+{
+  "name": "schedule_reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"minutes_to_wait\": 2,\n  \"chat_id\": \"123456789\"\n}"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "F0f3AmJFL3zaROmc",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/F0f3AmJFL3zaROmc",
+          "cachedResultName": "Background_Reminder"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        352
+      ],
+      "id": "46642a43-6a81-4e1d-9fa0-43e313165f6a",
+      "name": "Call 'Background_Reminder'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Call 'Background_Reminder'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a8e6b675-e1f5-4c0b-ba47-209f3a0554cf",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "bzGATu5ZFXFmSy7w",
+  "tags": []
+}

@@ -1,0 +1,407 @@
+{
+  "name": "ИИ-бот для опроса родителей v.2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        -176
+      ],
+      "id": "2549c91f-f9f3-4d78-a46d-cfeec885997b",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "={{ $('Sanitize AI Output').first().json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        320
+      ],
+      "id": "b7fdeba4-5a75-4c13-90a6-e6de7921558d",
+      "name": "Send a text message"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        320
+      ],
+      "id": "2497ac1b-d9d4-4a4c-9957-c3e64755a6cd",
+      "name": "Send a chat action"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.min(Math.max(Math.round($('Sanitize AI Output').first().json.output.length / 30), 2), 5) }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        320
+      ],
+      "id": "9d05c2bf-9abf-4dce-a2df-dc1cf1e6be1b",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        48
+      ],
+      "id": "755a1a9a-11f7-429d-a7b8-ee6ef7965a28",
+      "name": "Send a chat action1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $('Prepare History For Storage').first().json.text || $json.output || '';\n\n// Detect leaked raw tool-call / XML-invoke syntax that should never reach the user\nconst leakPattern = /<invoke[\\s\\S]*|<\\/?parameter[\\s\\S]*|Calling\\s+\\w+/i;\nconst match = raw.match(leakPattern);\n\nlet clean = raw;\nif (match) {\n  clean = raw.slice(0, match.index).trim();\n}\n\nif (!clean) {\n  clean = 'Ой, кажется у меня на секунду пропала связь. Не могли бы вы, пожалуйста, повторить ваш последний ответ?';\n}\n\nreturn [{ json: { output: clean } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        320
+      ],
+      "id": "356b6322-57e0-4064-a019-943fd444df0e",
+      "name": "Sanitize AI Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "9d61aa8d-edb8-40ff-9cf7-14db7dc7f695",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -176
+      ],
+      "id": "14c47caa-599b-475a-93a7-2305772f1cb1",
+      "name": "Is Start Command"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Добрый день! Меня зовут Имя Фамилия, я с командой хочу собрать мнение родителей по поводу частного образования. Благодарю, что решили уделить нам время и ответить на несколько вопросов. Как мы говорили ранее, сейчас мы разрабатываем крупное технологическое решение для частных школ. Вся переписка будет внимательно изучена нашей командой, и мы постараемся сделать так, чтобы ни одна Ваша жалоба не осталась неучтенной. Не будете против, если мы сразу перейдем к вопросам?",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -176
+      ],
+      "id": "859ea9df-81ae-46e1-a761-82bbc7b5b899",
+      "name": "Send Start Greeting"
+    },
+    {
+      "parameters": {
+        "collection": "claude_agent_history",
+        "options": {},
+        "query": "={{ JSON.stringify({ chat_id: String($('Telegram Trigger').item.json.message.chat.id) }) }}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        48
+      ],
+      "id": "545b614e-00c4-446e-85b4-01c55eda8489",
+      "name": "Get Conversation History",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('Telegram Trigger').item.json;\nconst chatId = trigger.message.chat.id;\nconst rawText = trigger.message.text;\nconst userText = (rawText && rawText.trim().length > 0)\n  ? rawText\n  : '[Пользователь отправил сообщение без текста — вероятно, фото, голосовое сообщение, стикер или файл]';\n\nconst mongoResult = $input.first().json;\nlet history = [];\nif (mongoResult && mongoResult.messages_json) {\n  try { history = JSON.parse(mongoResult.messages_json); } catch (e) { history = []; }\n}\n\nconst newMessages = [...history, { role: 'user', content: [{ type: 'text', text: userText }] }];\n\nreturn [{\n  json: {\n    chat_id: String(chatId),\n    messages_json: JSON.stringify(newMessages),\n    iteration: 0\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        48
+      ],
+      "id": "6339dfac-ea48-4f44-b744-1e3f37b01826",
+      "name": "Prepare Messages"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Wg1qkuhXziFMmLmE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Wg1qkuhXziFMmLmE",
+          "cachedResultName": "Claude Agent Turn"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ $json.chat_id }}",
+            "messages_json": "={{ $json.messages_json }}",
+            "iteration": "={{ $json.iteration }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "messages_json",
+              "displayName": "messages_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iteration",
+              "displayName": "iteration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1104,
+        48
+      ],
+      "id": "57f1e12d-56da-4cdf-8e61-c202fe6fa97f",
+      "name": "Call Claude Agent Turn"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $json;\nreturn [{\n  json: {\n    chat_id: result.chat_id,\n    messages_json: JSON.stringify(result.messages),\n    updated_at: new Date().toISOString(),\n    text: result.text\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        48
+      ],
+      "id": "51d698f0-826f-4e64-8a80-cfa9b2221252",
+      "name": "Prepare History For Storage"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "claude_agent_history",
+        "updateKey": "chat_id",
+        "fields": "chat_id,messages_json,updated_at",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        48
+      ],
+      "id": "3d5bb702-6959-4a3c-b306-2724bac33540",
+      "name": "Save Conversation History",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Start Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action1": {
+      "main": [
+        [
+          {
+            "node": "Get Conversation History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitize AI Output": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Start Command": {
+      "main": [
+        [
+          {
+            "node": "Send Start Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a chat action1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation History": {
+      "main": [
+        [
+          {
+            "node": "Prepare Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Messages": {
+      "main": [
+        [
+          {
+            "node": "Call Claude Agent Turn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude Agent Turn": {
+      "main": [
+        [
+          {
+            "node": "Prepare History For Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare History For Storage": {
+      "main": [
+        [
+          {
+            "node": "Save Conversation History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Conversation History": {
+      "main": [
+        [
+          {
+            "node": "Sanitize AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "da268f7b-5441-4a59-a200-52f70bfb915c",
+  "meta": {},
+  "id": "z7JZ9CaIi1jzCi9C",
+  "tags": []
+}

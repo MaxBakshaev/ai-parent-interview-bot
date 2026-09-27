@@ -1,0 +1,1160 @@
+{
+  "name": "Claude Agent Turn",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"chat_id\": \"123456789\",\n  \"messages_json\": \"[{\\\"role\\\":\\\"user\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Привет, не против ответить на пару вопросов\\\"}]}]\",\n  \"iteration\": 0\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2160,
+        -1040
+      ],
+      "id": "114d29a2-6773-402c-86cd-0d307e78e967",
+      "name": "When Called"
+    },
+    {
+      "parameters": {
+        "jsCode": "const FIELD_NAMES = [\"parent_name\", \"child_name\", \"child_grade\", \"school_name\", \"residency_status\", \"time_in_school\", \"has_other_children_in_school\", \"food_review\", \"food_portions_and_variety\", \"food_dietary_restrictions\", \"food_complaints\", \"food_price_quality\", \"education_quality_overall\", \"teacher_attention\", \"clubs_satisfaction\", \"clubs_fake_or_missed\", \"teacher_turnover_impact\", \"school_feedback_regularity\", \"cancellations_frequency\", \"cancellations_notification\", \"cancellations_compensation\", \"opinion_on_refunds\", \"price_fairness\", \"unexpected_fees\", \"one_thing_to_change\", \"admin_reaction_speed\", \"parent_opinion_valued\", \"unresolved_promises\", \"would_choose_again\", \"word_of_mouth\", \"unpleasant_surprises\", \"child_reluctance_to_go\", \"nps_score\", \"nps_reason\", \"adaptation_comments\", \"safety_evaluation\", \"child_shares_peer_dynamics\", \"conflicts_reported\", \"bullying_victim\", \"heard_bullying_others\", \"school_reaction_to_bullying\", \"reluctance_due_to_peers\", \"trusted_adult_presence\", \"ai_admission_utility\", \"ai_security_cameras\", \"ai_joy_diary\", \"ai_even_questioning\", \"ai_digital_profile\", \"ai_food_control\", \"cultural_festivals_interest\", \"ready_for_price_increase\", \"acceptable_price_increase\", \"additional_comments\", \"ready_for_followup\", \"summary_of_pains\", \"priorities_ranking\", \"decisive_factor\", \"priorities_shifted_over_time\"];\n\nconst SYSTEM_PROMPT = \"Ты — Имя Фамилия, ведущий аналитик и исследователь, который занимается частными технологическими разработками для школ. Твоя задача — провести глубинное интервью с родителями школьников, чтобы собрать честную обратную связь об их текущей школе и протестировать идеи новых ИИ-решений. Твое позиционирование — представитель серьезного предприятия, но при этом ты ведешь диалог максимально мягко, эмпатично и с искренним человеческим участием к болям родителей.\\n\\nИНСТРУКЦИИ ПО ВЫЗОВУ ИНСТРУМЕНТОВ (СТРОГО СОБЛЮДАТЬ):\\n1. Инструмент `schedule_reminder`: Вызывай ОБЯЗАТЕЛЬНО, если пользователь говорит, что занят, просит подождать или перенести общение. Запроси у пользователя количество минут для паузы и передай в параметр `minutes_to_wait`.\\n2. Инструмент `save_interview_results`: Вызывай ОБЯЗАТЕЛЬНО после КАЖДОГО содержательного ответа пользователя. Передавай в параметры ТОЛЬКО те поля, по которым ты только что узнал новую или уточнённую информацию из последнего сообщения пользователя. Поля, которые ещё неизвестны или не менялись с прошлого вызова, НЕ включай в вызов инструмента вообще (не передавай для них пустую строку, false или 0 — просто пропусти параметр). Ранее сохранённые значения хранятся на сервере и подтягиваются автоматически, повторно их присылать не нужно и не нужно \\\"обнулять\\\". Все значения полей ВСЕГДА пиши на русском языке (никогда не пиши \\\"yes\\\"/\\\"no\\\" или другой текст на английском). Поле `ready_for_followup` заполняй ТОЛЬКО если пользователю был явно задан вопрос про готовность к повторному контакту (см. Шаг 11) и получен прямой ответ на него — никогда не выводи это поле из посторонних заявлений (например, просьба не публиковать данные интервью — это про приватность, а не про повторный контакт, и не должна попадать в это поле).\\n\\nПРАВИЛА ВЕДЕНИЯ ДИАЛОГА (СТРОГО СОБЛЮДАТЬ):\\n* ЗАДАВАЙ ТОЛЬКО ОДИН ВОПРОС ИЛИ ОДИН НЕБОЛЬШОЙ БЛОК ВОПРОСОВ ЗА РАЗ. Никогда не вываливай на пользователя весь список. Если шаг сценария содержит несколько под-вопросов (отмечены отдельными пунктами) — задавай их строго по одному, дожидаясь ответа на каждый, прежде чем переходить к следующему пункту того же шага.\\n* ДОЖДИСЬ ОТВЕТА перед тем, как идти дальше.\\n* ПРОЯВЛЯЙ ЭМПАТИЮ. Если родитель рассказывает о проблеме (буллинг, плохая еда, игнорирование), сначала от лица человека прояви сочувствие (\\\"Мне очень жаль, что ваш ребенок столкнулся с этим...\\\", \\\"Понимаю, это действительно неприятная ситуация\\\"), а затем аккуратно задай уточняющий вопрос. Не будь сухим роботом.\\n* КОПАЙ ГЛУБЖЕ, НО НЕ ДАВИ. Если ответ слишком короткий (\\\"да\\\", \\\"нет\\\", \\\"нормально\\\") или закрывает только часть заданного вопроса (например, вопрос был про несколько вещей сразу, а ответили только на одну) — задай ОДИН мягкий уточняющий вопрос, чтобы раскрыть тему полнее. Но если по тону ответа или прямым словам видно, что человек не хочет углубляться в конкретную тему — прими это, не переспрашивай повторно и переходи дальше. Не превращайся в дознавателя.\\n* ЕСЛИ СПРОСЯТ ПРО НАЗВАНИЕ КОМПАНИИ. Если пользователь спросит, как называется компания, отвечай, что рабочее название пока не придумано (не называй никаких конкретных названий).\\n* НЕ ДАВАЙ ОЦЕНОК КОНКРЕТНОЙ ШКОЛЕ, О КОТОРЫХ ТЫ НЕ МОЖЕШЬ ЗНАТЬ. Никогда не утверждай, что названная родителем школа (например, \\\"Ромашка\\\") хорошая, плохая, лучшая или худшая — у тебя нет и не может быть такой информации. Вместо оценки самой школы поддерживай решение или чувства родителя нейтральными фразами (\\\"звучит как продуманный выбор\\\", \\\"понимаю, почему это было важно\\\", \\\"хорошо, что вы это заметили\\\" и т.п.), не подтверждая и не оценивая качество школы как таковой.\\n* ЕСЛИ РОДИТЕЛЬ НАЧИНАЕТ ПРЕДЛАГАТЬ СВОИ ИДЕИ ИЛИ РЕШЕНИЯ НЕ ПО ХОДУ ЗАДАННОГО ВОПРОСА (развёрнутые предложения по продукту, софту, процессам школы и т.п.) — поблагодари и мягко предложи обсудить это отдельно, не позволяя этому уводить интервью в сторону и разрастаться. Например: \\\"Это очень ценная идея, спасибо! Чтобы не потерять её, давайте мы отдельно свяжемся с вами и обсудим подробнее. А сейчас, если не возражаете, вернёмся к следующему вопросу...\\\". Кратко зафиксируй суть идеи в additional_comments, но не позволяй этой теме занять весь оставшийся разговор.\\n\\nСТРУКТУРА ИНТЕРВЬЮ (Двигайся строго по шагам):\\n\\nШаг 0. Онбординг (приветствие уже отправлено технически).\\nВАЖНО: приветственное сообщение (\\\"Добрый день! Меня зовут Имя Фамилия...Не будете против, если мы сразу перейдем к вопросам?\\\") уже было отправлено пользователю АВТОМАТИЧЕСКИ, до того как ты включился в диалог — повторно его отправлять не нужно и нельзя. Первое сообщение, которое ты видишь от пользователя — это его ответ на это приветствие (согласие, приветствие в ответ и т.п.), независимо от его точного содержания.\\nТвоя первая реплика в диалоге должна сразу быть: \\\"Как можем к Вам обращаться? В какой школе проходит обучение Ваш ребенок и в каком классе он учится?\\\"\\n\\nШаг 1. Локация и история.\\nУзнай:\\n* Постоянно живут в этой стране или недавно переехали (релоканты)?\\n\\nШаг 0.1. Приоритеты при выборе школы.\\nНапиши: \\\"Прежде чем перейти к деталям, хочу понять — что для вас было наиболее важным при выборе именно этой школы?\\\"\\nЭто ТРИ отдельных вопроса — задавай их последовательно, по одному, дожидаясь ответа на каждый (не объединяй в одно сообщение):\\n1) Если бы нужно было расставить по важности следующие пункты при выборе школы — что было бы на первом месте, а что на последнем: качество образования, педагогический состав (опыт и отношение учителей), питание (частота и рацион), количество кружков и интерактивных занятий, частота праздников и мероприятий?\\n2) Что из этого стало решающим фактором именно для их семьи — попроси вспомнить конкретный момент или разговор, после которого они поняли \\\"да, это наша школа\\\".\\n3) Изменилось ли это мнение сейчас, спустя время обучения ребёнка — то, что казалось важным на входе, оказалось важным на деле, или приоритеты сместились? (Если родитель не ответил на эту часть в предыдущем ответе — обязательно задай её отдельно, не пропускай.)\\n\\nВернись к оставшимся вопросам Шага 1:\\n* Как давно ребенок учится в этой школе?\\n* Это единственный ребенок в школе, или есть еще дети?\\n(Если релоканты — позже обрати особое внимание на вопросы из Блока 7).\\n\\nШаг 2. Питание.\\nЭто несколько отдельных аспектов — пройдись по каждому (можно объединять не более 2 логически близких за раз), не пропуская ни одного:\\n* Общая оценка питания, размер порций и разнообразие.\\n* Учитывает ли школа особенности питания ребёнка — аллергии, халяль, вегетарианство или другие ограничения? (задавай этот вопрос явно, даже если родитель уже сказал, что тема еды его не сильно волнует)\\n* Жалуется ли ребенок на еду?\\n* Соответствует ли качество и разнообразие питания той цене, которую платят родители?\\n\\nШаг 3. Образование и внимание.\\nЭто несколько отдельных аспектов — пройдись по каждому:\\n* Уровень преподавания в целом.\\n* Равномерность внимания учителей ко всем ученикам.\\n* Кружки и допзанятия — интересны ли ребёнку, устраивает ли количество и разнообразие.\\n* Бывало ли, что заявленный кружок или мероприятие в итоге не проводили, отменяли в последний момент, или он существовал скорее \\\"на бумаге\\\"? (задай этот вопрос явно, отдельно от общего вопроса про кружки)\\n* Текучка кадров среди учителей и как часто получаете обратную связь от школы о прогрессе ребёнка.\\n\\nШаг 4. Форс-мажоры.\\nУзнай про отмены занятий (свет, вода, отопление), как часто это бывает, как школа уведомляет и компенсирует ли это финансово/переносами.\\n\\nШаг 5. Стоимость.\\nСправедлива ли цена? Были ли скрытые платежи?\\n\\nШаг 6. Коммуникация и администрация.\\nКак быстро школа реагирует на жалобы? Учитывается ли мнение родителей? Были ли невыполненные обещания?\\n\\nШаг 7. Скрытые боли.\\n* Выбрали бы они эту школу снова?\\n* Что рассказывают о ней другим?\\n* Что неприятно удивило после поступления?\\n* Жалуется ли ребенок дома на нежелание идти в школу?\\n* Если бы можно было одним движением поменять в этой школе только одну вещь — что бы это было? (это отдельный, общий вопрос, не путай с ценой — спрашивай его всегда)\\n* Оценка от 1 до 10 (вероятность рекомендации). ВАЖНО: если родитель уклоняется от числа и отвечает описательно (\\\"не буду рекомендовать\\\", \\\"пусть сами составят мнение\\\") — прими такой ответ как содержательный, но мягко уточни: \\\"Если всё же нужно выбрать цифру от 1 до 10 — какая была бы ближе всего?\\\", чтобы по возможности получить число для nps_score. Также обязательно спроси, что повлияло на эту оценку (nps_reason).\\n\\nШаг 8. Уточняющий (зависит от Шага 1).\\nЕсли релоканты: Насколько школа учитывает культурные особенности, сложно ли было адаптироваться?\\nЕсли местные: Сравнивают ли с другими частными школами, где учатся знакомые?\\n\\nШаг 9. Безопасность и буллинг.\\nЭто несколько отдельных аспектов — пройдись по каждому:\\n* Расспроси про конфликты, травлю, драки в целом в школе/классе. Как реагирует школа?\\n* Отдельно и прямо спроси: сталкивался ли ЛИЧНО ИХ РЕБЁНОК с травлей или обидным отношением со стороны других детей (а не только с конфликтами в целом)?\\n* Рассказывает ли ребёнок дома, как у него отношения со сверстниками — дружит ли с кем-то, есть ли конфликты?\\n* Если ранее выяснилось, что ребёнок не хочет идти в школу (Шаг 7) — уточни, связано ли это с отношениями со сверстниками, или причина в чём-то другом.\\n* Есть ли в школе взрослый, к которому ребенок может обратиться в случае проблем?\\n\\nШаг 10. Тестирование ИИ-решений (Презентация).\\nНапиши: \\\"Теперь позвольте, мы немного посвятим Вас в свою разработку...\\\" (Презентуй идеи по одной, жди реакции на каждую).\\nИдеи для обсуждения (презентуй по одной):\\n10.1 ИИ-ассистент при поступлении (мгновенные ответы вместо администратора).\\n10.2 ИИ-камеры (фиксация драк и падений в реальном времени).\\n10.3 \\\"Дневник радости\\\" (короткие видео с успехами ребенка).\\n10.4 Равномерный опрос учеников (подсказки учителю, кого спросить).\\n10.5 Цифровой профиль и профориентация.\\n10.6 Контроль пропущенных приемов пищи.\\n10.7 Тематические культурные фестивали.\\n\\nПосле того как обсудили все 7 идей выше — задай ОТДЕЛЬНЫЙ, завершающий вопрос про готовность платить больше (это НЕ идея, не номеруй и не называй её идеей или восьмым пунктом — это отдельный, самостоятельный вопрос про готовность к повышению стоимости ради всех обсуждённых функций вместе, на сколько % они готовы было бы принять повышение).\\n\\nШаг 11. Закрытие.\\n* Узнай, есть ли что-то еще, о чем хотели бы рассказать.\\n* Прямо спроси: \\\"Не против, если мы иногда будем на связи, чтобы уточнить, как обстоят дела дальше?\\\" — и запиши прямой ответ в ready_for_followup. Не пропускай этот вопрос и не выводи ответ на него из других реплик разговора.\\n* Перед последним вызовом инструмента сохранения — сформулируй для себя краткое резюме (2-4 предложения) главных болей этого родителя своими словами и передай его в поле summary_of_pains.\\n* Поблагодари за время и заверши диалог.\\n\\n\\nВАЖНОЕ ПРАВИЛО КАЖДОГО ОТВЕТА:\\nНа каждое сообщение пользователя ты ДОЛЖЕН выполнить ровно два действия (именно в таком порядке):\\n1. СНАЧАЛА вызови нужный инструмент (save_interview_results или schedule_reminder).\\n2. ТОЛЬКО ПОСЛЕ ЭТОГО сгенерируй текстовый ответ/следующий вопрос пользователю.\\nЗАПРЕЩАЕТСЯ отвечать пользователю текстом, не вызвав перед этим инструмент сохранения!\";\n\nconst properties = {};\nfor (const f of FIELD_NAMES) {\n  properties[f] = { type: \"string\" };\n}\n\nconst tools = [\n  {\n    name: \"save_interview_results\",\n    description: \"Сохраняет результаты интервью с родителем. Передавай ТОЛЬКО те поля, по которым только что узнал новую или уточнённую информацию из последнего сообщения пользователя. Поля, которые ещё неизвестны или не менялись, не включай вообще (не отправляй для них пустую строку).\",\n    input_schema: {\n      type: \"object\",\n      properties: properties\n    }\n  },\n  {\n    name: \"schedule_reminder\",\n    description: \"Планирует, что бот сам напишет пользователю снова через заданное количество минут. Используй, когда пользователь просит подождать или перенести разговор.\",\n    input_schema: {\n      type: \"object\",\n      properties: {\n        minutes_to_wait: { type: \"number\", description: \"Через сколько минут написать пользователю снова\" }\n      },\n      required: [\"minutes_to_wait\"]\n    },\n    cache_control: { type: \"ephemeral\", ttl: \"1h\" }\n  }\n];\n\nlet messages;\ntry {\n  messages = JSON.parse($json.messages_json || '[]');\n} catch (e) {\n  messages = [];\n}\n\n// Deep clone before mutating so the \"clean\" messages array (without cache markers) stays intact for storage\nconst messagesForApi = JSON.parse(JSON.stringify(messages));\nif (messagesForApi.length > 0) {\n  const lastMsg = messagesForApi[messagesForApi.length - 1];\n  if (Array.isArray(lastMsg.content) && lastMsg.content.length > 0) {\n    const lastBlock = lastMsg.content[lastMsg.content.length - 1];\n    // Anthropic rejects cache_control on empty text blocks - skip caching this turn rather than error out\n    const isEmptyText = lastBlock.type === 'text' && (!lastBlock.text || lastBlock.text.length === 0);\n    if (!isEmptyText) {\n      lastBlock.cache_control = { type: \"ephemeral\" };\n    }\n  }\n}\n\nconst body = {\n  model: \"claude-haiku-4-5-20251001\",\n  max_tokens: 2048,\n  system: SYSTEM_PROMPT,\n  tools: tools,\n  messages: messagesForApi\n};\n\nreturn [{\n  json: {\n    body: body,\n    chat_id: $json.chat_id,\n    messages: messages,\n    iteration: $json.iteration || 0\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1936,
+        -1040
+      ],
+      "id": "0709868f-0fc5-4eb7-937a-930b99e2b99b",
+      "name": "Build Anthropic Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1712,
+        -1040
+      ],
+      "id": "62535ab0-e92d-4d6d-b899-58f3387afc32",
+      "name": "Call Claude API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json;\nconst prev = $('Build Anthropic Request').first().json;\n\nif (response.type === 'error' || !response.content) {\n  return [{\n    json: {\n      chat_id: prev.chat_id,\n      iteration: prev.iteration,\n      has_tool_use: false,\n      tool_name: null,\n      tool_input: null,\n      tool_use_id: null,\n      text: 'Ой, кажется у меня на секунду пропала связь. Не могли бы вы, пожалуйста, повторить ваш последний ответ?',\n      messages: prev.messages\n    }\n  }];\n}\n\nconst contentBlocks = response.content || [];\nconst toolUseBlocks = contentBlocks.filter(b => b.type === 'tool_use');\nconst textBlocks = contentBlocks.filter(b => b.type === 'text');\nconst text = textBlocks.map(b => b.text).join('\\n').trim();\n\nconst updatedMessages = [...prev.messages, { role: 'assistant', content: contentBlocks }];\nconst firstTool = toolUseBlocks[0] || null;\n\nreturn [{\n  json: {\n    chat_id: prev.chat_id,\n    iteration: prev.iteration,\n    has_tool_use: toolUseBlocks.length > 0,\n    tool_name: firstTool ? firstTool.name : null,\n    tool_input: firstTool ? firstTool.input : null,\n    tool_use_id: firstTool ? firstTool.id : null,\n    text: text,\n    messages: updatedMessages\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        -1040
+      ],
+      "id": "de5fbcac-6689-4bd8-948f-721fae3244a5",
+      "name": "Parse Claude Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "a08a21ae-b083-42ff-a839-a396423f0a31",
+              "leftValue": "={{ $json.has_tool_use }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2592,
+        -400
+      ],
+      "id": "0b0483ce-2754-4c64-a4bb-04e3b602250e",
+      "name": "Has Tool Use?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "70ec5f54-2a9e-4b2e-97fc-560ac920602e",
+              "leftValue": "={{ $json.tool_name }}",
+              "rightValue": "save_interview_results",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2384,
+        -656
+      ],
+      "id": "aeae9f81-24f6-4150-9ff5-0bb7a1586440",
+      "name": "Is Save Interview?"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "HqQSZI3rZ56NdUuF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/HqQSZI3rZ56NdUuF",
+          "cachedResultName": "save_interview_results"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ $json.chat_id }}",
+            "parent_name": "={{ $json.tool_input?.parent_name ?? null }}",
+            "child_name": "={{ $json.tool_input?.child_name ?? null }}",
+            "child_grade": "={{ $json.tool_input?.child_grade ?? null }}",
+            "school_name": "={{ $json.tool_input?.school_name ?? null }}",
+            "residency_status": "={{ $json.tool_input?.residency_status ?? null }}",
+            "time_in_school": "={{ $json.tool_input?.time_in_school ?? null }}",
+            "has_other_children_in_school": "={{ $json.tool_input?.has_other_children_in_school ?? null }}",
+            "food_review": "={{ $json.tool_input?.food_review ?? null }}",
+            "food_portions_and_variety": "={{ $json.tool_input?.food_portions_and_variety ?? null }}",
+            "food_dietary_restrictions": "={{ $json.tool_input?.food_dietary_restrictions ?? null }}",
+            "food_complaints": "={{ $json.tool_input?.food_complaints ?? null }}",
+            "food_price_quality": "={{ $json.tool_input?.food_price_quality ?? null }}",
+            "education_quality_overall": "={{ $json.tool_input?.education_quality_overall ?? null }}",
+            "teacher_attention": "={{ $json.tool_input?.teacher_attention ?? null }}",
+            "clubs_satisfaction": "={{ $json.tool_input?.clubs_satisfaction ?? null }}",
+            "clubs_fake_or_missed": "={{ $json.tool_input?.clubs_fake_or_missed ?? null }}",
+            "teacher_turnover_impact": "={{ $json.tool_input?.teacher_turnover_impact ?? null }}",
+            "school_feedback_regularity": "={{ $json.tool_input?.school_feedback_regularity ?? null }}",
+            "cancellations_frequency": "={{ $json.tool_input?.cancellations_frequency ?? null }}",
+            "cancellations_notification": "={{ $json.tool_input?.cancellations_notification ?? null }}",
+            "cancellations_compensation": "={{ $json.tool_input?.cancellations_compensation ?? null }}",
+            "opinion_on_refunds": "={{ $json.tool_input?.opinion_on_refunds ?? null }}",
+            "price_fairness": "={{ $json.tool_input?.price_fairness ?? null }}",
+            "unexpected_fees": "={{ $json.tool_input?.unexpected_fees ?? null }}",
+            "one_thing_to_change": "={{ $json.tool_input?.one_thing_to_change ?? null }}",
+            "admin_reaction_speed": "={{ $json.tool_input?.admin_reaction_speed ?? null }}",
+            "parent_opinion_valued": "={{ $json.tool_input?.parent_opinion_valued ?? null }}",
+            "unresolved_promises": "={{ $json.tool_input?.unresolved_promises ?? null }}",
+            "would_choose_again": "={{ $json.tool_input?.would_choose_again ?? null }}",
+            "word_of_mouth": "={{ $json.tool_input?.word_of_mouth ?? null }}",
+            "unpleasant_surprises": "={{ $json.tool_input?.unpleasant_surprises ?? null }}",
+            "child_reluctance_to_go": "={{ $json.tool_input?.child_reluctance_to_go ?? null }}",
+            "nps_score": "={{ $json.tool_input?.nps_score ?? null }}",
+            "nps_reason": "={{ $json.tool_input?.nps_reason ?? null }}",
+            "adaptation_comments": "={{ $json.tool_input?.adaptation_comments ?? null }}",
+            "safety_evaluation": "={{ $json.tool_input?.safety_evaluation ?? null }}",
+            "child_shares_peer_dynamics": "={{ $json.tool_input?.child_shares_peer_dynamics ?? null }}",
+            "conflicts_reported": "={{ $json.tool_input?.conflicts_reported ?? null }}",
+            "bullying_victim": "={{ $json.tool_input?.bullying_victim ?? null }}",
+            "heard_bullying_others": "={{ $json.tool_input?.heard_bullying_others ?? null }}",
+            "school_reaction_to_bullying": "={{ $json.tool_input?.school_reaction_to_bullying ?? null }}",
+            "reluctance_due_to_peers": "={{ $json.tool_input?.reluctance_due_to_peers ?? null }}",
+            "trusted_adult_presence": "={{ $json.tool_input?.trusted_adult_presence ?? null }}",
+            "ai_admission_utility": "={{ $json.tool_input?.ai_admission_utility ?? null }}",
+            "ai_security_cameras": "={{ $json.tool_input?.ai_security_cameras ?? null }}",
+            "ai_joy_diary": "={{ $json.tool_input?.ai_joy_diary ?? null }}",
+            "ai_even_questioning": "={{ $json.tool_input?.ai_even_questioning ?? null }}",
+            "ai_digital_profile": "={{ $json.tool_input?.ai_digital_profile ?? null }}",
+            "ai_food_control": "={{ $json.tool_input?.ai_food_control ?? null }}",
+            "cultural_festivals_interest": "={{ $json.tool_input?.cultural_festivals_interest ?? null }}",
+            "ready_for_price_increase": "={{ $json.tool_input?.ready_for_price_increase ?? null }}",
+            "acceptable_price_increase": "={{ $json.tool_input?.acceptable_price_increase ?? null }}",
+            "additional_comments": "={{ $json.tool_input?.additional_comments ?? null }}",
+            "ready_for_followup": "={{ $json.tool_input?.ready_for_followup ?? null }}",
+            "summary_of_pains": "={{ $json.tool_input?.summary_of_pains ?? null }}",
+            "priorities_ranking": "={{ $json.tool_input?.priorities_ranking ?? null }}",
+            "decisive_factor": "={{ $json.tool_input?.decisive_factor ?? null }}",
+            "priorities_shifted_over_time": "={{ $json.tool_input?.priorities_shifted_over_time ?? null }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "parent_name",
+              "displayName": "parent_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "child_name",
+              "displayName": "child_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "child_grade",
+              "displayName": "child_grade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "school_name",
+              "displayName": "school_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "residency_status",
+              "displayName": "residency_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "time_in_school",
+              "displayName": "time_in_school",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "has_other_children_in_school",
+              "displayName": "has_other_children_in_school",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "food_review",
+              "displayName": "food_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "food_portions_and_variety",
+              "displayName": "food_portions_and_variety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "food_dietary_restrictions",
+              "displayName": "food_dietary_restrictions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "food_complaints",
+              "displayName": "food_complaints",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "food_price_quality",
+              "displayName": "food_price_quality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "education_quality_overall",
+              "displayName": "education_quality_overall",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "teacher_attention",
+              "displayName": "teacher_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "clubs_satisfaction",
+              "displayName": "clubs_satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "clubs_fake_or_missed",
+              "displayName": "clubs_fake_or_missed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "teacher_turnover_impact",
+              "displayName": "teacher_turnover_impact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "school_feedback_regularity",
+              "displayName": "school_feedback_regularity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "cancellations_frequency",
+              "displayName": "cancellations_frequency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "cancellations_notification",
+              "displayName": "cancellations_notification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "cancellations_compensation",
+              "displayName": "cancellations_compensation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "opinion_on_refunds",
+              "displayName": "opinion_on_refunds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "price_fairness",
+              "displayName": "price_fairness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "unexpected_fees",
+              "displayName": "unexpected_fees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "one_thing_to_change",
+              "displayName": "one_thing_to_change",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "admin_reaction_speed",
+              "displayName": "admin_reaction_speed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "parent_opinion_valued",
+              "displayName": "parent_opinion_valued",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "unresolved_promises",
+              "displayName": "unresolved_promises",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "would_choose_again",
+              "displayName": "would_choose_again",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "word_of_mouth",
+              "displayName": "word_of_mouth",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "unpleasant_surprises",
+              "displayName": "unpleasant_surprises",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "child_reluctance_to_go",
+              "displayName": "child_reluctance_to_go",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nps_score",
+              "displayName": "nps_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nps_reason",
+              "displayName": "nps_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "adaptation_comments",
+              "displayName": "adaptation_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "safety_evaluation",
+              "displayName": "safety_evaluation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "child_shares_peer_dynamics",
+              "displayName": "child_shares_peer_dynamics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "conflicts_reported",
+              "displayName": "conflicts_reported",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "bullying_victim",
+              "displayName": "bullying_victim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "heard_bullying_others",
+              "displayName": "heard_bullying_others",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "school_reaction_to_bullying",
+              "displayName": "school_reaction_to_bullying",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "reluctance_due_to_peers",
+              "displayName": "reluctance_due_to_peers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "trusted_adult_presence",
+              "displayName": "trusted_adult_presence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ai_admission_utility",
+              "displayName": "ai_admission_utility",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ai_security_cameras",
+              "displayName": "ai_security_cameras",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ai_joy_diary",
+              "displayName": "ai_joy_diary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ai_even_questioning",
+              "displayName": "ai_even_questioning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ai_digital_profile",
+              "displayName": "ai_digital_profile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ai_food_control",
+              "displayName": "ai_food_control",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "cultural_festivals_interest",
+              "displayName": "cultural_festivals_interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ready_for_price_increase",
+              "displayName": "ready_for_price_increase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "acceptable_price_increase",
+              "displayName": "acceptable_price_increase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "additional_comments",
+              "displayName": "additional_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ready_for_followup",
+              "displayName": "ready_for_followup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "summary_of_pains",
+              "displayName": "summary_of_pains",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "priorities_ranking",
+              "displayName": "priorities_ranking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "decisive_factor",
+              "displayName": "decisive_factor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "priorities_shifted_over_time",
+              "displayName": "priorities_shifted_over_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -2160,
+        -768
+      ],
+      "id": "6a070598-12fa-47d7-9085-ea6c386f600e",
+      "name": "Execute: Save Interview Results"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "bzGATu5ZFXFmSy7w",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/bzGATu5ZFXFmSy7w",
+          "cachedResultName": "schedule_reminder"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ $json.chat_id }}",
+            "minutes_to_wait": "={{ $json.tool_input?.minutes_to_wait ?? 5 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "minutes_to_wait",
+              "displayName": "minutes_to_wait",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -2160,
+        -560
+      ],
+      "id": "f164538d-fb69-46fa-adb1-56d3075f291c",
+      "name": "Execute: Schedule Reminder"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $('Parse Claude Response').first().json;\nreturn [{\n  json: {\n    tool_result: {\n      type: 'tool_result',\n      tool_use_id: prev.tool_use_id,\n      content: 'Сохранено.'\n    },\n    chat_id: prev.chat_id,\n    messages: prev.messages,\n    iteration: prev.iteration\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1936,
+        -768
+      ],
+      "id": "1080602b-248a-4ac5-afd7-5b74330f571f",
+      "name": "Build Tool Result (Save)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $('Parse Claude Response').first().json;\nreturn [{\n  json: {\n    tool_result: {\n      type: 'tool_result',\n      tool_use_id: prev.tool_use_id,\n      content: 'Напоминание запланировано.'\n    },\n    chat_id: prev.chat_id,\n    messages: prev.messages,\n    iteration: prev.iteration\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1936,
+        -560
+      ],
+      "id": "b47a5b23-49b6-4ad5-8455-65f0cfc47709",
+      "name": "Build Tool Result (Reminder)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $json;\nconst newMessages = [...prev.messages, { role: 'user', content: [prev.tool_result] }];\nreturn [{\n  json: {\n    chat_id: prev.chat_id,\n    messages: newMessages,\n    iteration: prev.iteration + 1\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        -656
+      ],
+      "id": "3ae96582-ff0f-4b08-85ed-b6a932796262",
+      "name": "Append Tool Result & Prep Recursion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "a6199a55-cb4d-4a5d-b156-a026806bd36e",
+              "leftValue": "={{ $json.iteration }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        -656
+      ],
+      "id": "3bb998a4-e46c-4fdb-a248-8ff330bcac2c",
+      "name": "Under Iteration Limit?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $json;\nreturn [{\n  json: {\n    chat_id: prev.chat_id,\n    text: 'Кажется, разговор затянулся дольше обычного — давайте вернёмся к вашему следующему сообщению.',\n    messages: prev.messages\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1264,
+        -560
+      ],
+      "id": "572cca45-f15e-45e8-9105-f4fa39329f0b",
+      "name": "Force Stop Fallback"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        -384
+      ],
+      "id": "60363cef-4d09-47af-94f5-1502a754fc3c",
+      "name": "Return Result"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Wg1qkuhXziFMmLmE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Wg1qkuhXziFMmLmE",
+          "cachedResultName": "Claude Agent Turn"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ $json.chat_id }}",
+            "messages_json": "={{ JSON.stringify($json.messages) }}",
+            "iteration": "={{ $json.iteration }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "messages_json",
+              "displayName": "messages_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iteration",
+              "displayName": "iteration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1264,
+        -720
+      ],
+      "id": "b6975c57-0c46-406a-b75b-1ee7f77bd61a",
+      "name": "Call Self (Recurse)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Build Anthropic Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Anthropic Request": {
+      "main": [
+        [
+          {
+            "node": "Call Claude API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude API": {
+      "main": [
+        [
+          {
+            "node": "Parse Claude Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Claude Response": {
+      "main": [
+        [
+          {
+            "node": "Has Tool Use?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Tool Use?": {
+      "main": [
+        [
+          {
+            "node": "Is Save Interview?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Save Interview?": {
+      "main": [
+        [
+          {
+            "node": "Execute: Save Interview Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: Schedule Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Save Interview Results": {
+      "main": [
+        [
+          {
+            "node": "Build Tool Result (Save)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Schedule Reminder": {
+      "main": [
+        [
+          {
+            "node": "Build Tool Result (Reminder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Tool Result (Save)": {
+      "main": [
+        [
+          {
+            "node": "Append Tool Result & Prep Recursion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Tool Result (Reminder)": {
+      "main": [
+        [
+          {
+            "node": "Append Tool Result & Prep Recursion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Tool Result & Prep Recursion": {
+      "main": [
+        [
+          {
+            "node": "Under Iteration Limit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Under Iteration Limit?": {
+      "main": [
+        [
+          {
+            "node": "Call Self (Recurse)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Force Stop Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Force Stop Fallback": {
+      "main": [
+        [
+          {
+            "node": "Return Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Self (Recurse)": {
+      "main": [
+        [
+          {
+            "node": "Return Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f5ccb528-4687-4707-b20e-19b489b10620",
+  "meta": {},
+  "id": "Wg1qkuhXziFMmLmE",
+  "tags": []
+}
